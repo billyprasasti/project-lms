@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body {
+    @apply m-0 bg-cream font-body text-ink antialiased;
+  }
+  a { @apply no-underline; color: inherit; }
+  button { @apply cursor-pointer; font-family: inherit; }
+  :focus-visible { outline: 2px solid #2F8747; outline-offset: 2px; }
+}
+
+/* ===== CSS tambahan: hal yang tidak praktis ditulis dengan utility ===== */
+
+/* Hero / banner gradasi (radial + linear berlapis) */
+.hero-bg {
+  background:
+    radial-gradient(120% 160% at 85% 20%, rgba(63,166,90,.35), transparent 55%),
+    linear-gradient(120deg, #1C2B22 0%, #16211A 60%, #101815 100%);
+}
+
+/* Sembunyikan scrollbar */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Bendera Indonesia di input nomor HP */
+.flag-id { background: linear-gradient(180deg, #EB5757 50%, #FFFFFF 50%); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* Teks "RULES" di banner pre-test/quiz: stroke + bayangan keras */
+.rules-text {
+  color: #fff;
+  -webkit-text-stroke: 6px #000;
+  paint-order: stroke fill;
+  text-shadow: 6px 6px 0 #000;
+  letter-spacing: 0.02em;
+}

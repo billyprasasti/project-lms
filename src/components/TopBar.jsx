@@ -1,13 +1,10 @@
-import { Link } from "react-router-dom";
+import Logo from "./Logo";
 
 export default function TopBar() {
   return (
-    <header className="topbar">
-      <div className="container">
-        <Link to="/beranda" className="logo">
-          <span className="video">video</span>
-          <span className="belajar">belajar</span>
-        </Link>
+    <header className="border-b border-line bg-white">
+      <div className="mx-auto flex h-[68px] w-full max-w-[1180px] items-center px-6">
+        <Logo />
       </div>
     </header>
   );
