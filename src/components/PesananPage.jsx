@@ -1,8 +1,9 @@
+import CourseImage from "./CourseImage";
 import { useState } from "react";
 import AccountLayout from "./AccountLayout";
 import Tabs from "./Tabs";
 import Pagination from "./Pagination";
-import { THUMBS, formatRupiah } from "../data/courses";
+import { formatRupiah } from "../data/courses";
 import { formatDateTime } from "../data/account";
 
 const PER_PAGE = 5;
@@ -70,7 +71,7 @@ export default function PesananPage({ orders, profile }) {
                 <span className={`ml-auto rounded-md px-2.5 py-1 text-[11px] font-semibold ${BADGE[o.status]}`}>{o.status}</span>
               </div>
               <div className="flex items-center gap-3 px-4 py-3.5">
-                <span className={`h-9 w-9 flex-none rounded-md bg-gradient-to-br ${THUMBS[o.cat]}`} />
+                <CourseImage src={o.image} cat={o.cat} className="h-9 w-9 flex-none rounded-md" />
                 <span className="flex-1 text-[13px] font-medium">{o.title}</span>
                 <div className="hidden border-l border-line pl-4 text-xs sm:block">
                   <div className="text-inkSoft">Harga</div>

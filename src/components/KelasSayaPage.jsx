@@ -1,9 +1,11 @@
+import CourseImage from "./CourseImage";
+import DataStatus from "./DataStatus";
+import { useCourses } from "../context/CoursesContext";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import AccountLayout from "./AccountLayout";
 import Tabs from "./Tabs";
 import Pagination from "./Pagination";
-import { THUMBS } from "../data/courses";
 
 const PER_PAGE = 3;
 const TABS = [
@@ -12,7 +14,8 @@ const TABS = [
   { key: "selesai", label: "Selesai" },
 ];
 
-export default function KelasSayaPage({ courses, enrollments, profile }) {
+export default function KelasSayaPage({ enrollments, profile }) {
+  const { courses, loading, error, reload } = useCourses();
   const [tab, setTab] = useState("semua");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -40,6 +43,7 @@ export default function KelasSayaPage({ courses, enrollments, profile }) {
           className="h-9 w-40 rounded-lg border border-line px-3 text-xs focus:border-green focus:outline-none" />
       </div>
 
+      <DataStatus loading={loading} error={error} onRetry={reload}>
       {visible.length === 0 ? (
         <p className="rounded-lg border border-dashed border-line p-10 text-center text-sm text-inkSoft">
           Belum ada kelas. <Link to="/kategori" className="font-semibold text-green">Cari kelas</Link>
@@ -55,7 +59,7 @@ export default function KelasSayaPage({ courses, enrollments, profile }) {
                 </span>
               </div>
               <div className="flex gap-4 px-4 py-4">
-                <span className={`hidden h-28 w-28 flex-none rounded-lg bg-gradient-to-br sm:block ${THUMBS[course.cat]}`} />
+                <CourseImage src={course.image} cat={course.cat} className="hidden h-28 w-28 flex-none rounded-lg sm:block" />
                 <div className="min-w-0">
                   <h3 className="mb-1 font-head text-sm font-semibold">{course.category}</h3>
                   <p className="mb-2 text-xs leading-relaxed text-inkSoft">{course.desc}</p>
@@ -89,6 +93,7 @@ export default function KelasSayaPage({ courses, enrollments, profile }) {
         </ul>
       )}
       <Pagination page={current} totalPages={totalPages} onChange={setPage} />
+      </DataStatus>
     </AccountLayout>
   );
 }

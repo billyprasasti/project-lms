@@ -1,3 +1,5 @@
+import DataStatus from "./DataStatus";
+import { useCourses } from "../context/CoursesContext";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Stars from "./Stars";
@@ -16,8 +18,9 @@ function ItemIcon({ type, done }) {
   return <span className="mt-0.5 w-4 flex-none text-center text-sm text-inkSoft">{TYPE_ICON[type]}</span>;
 }
 
-export default function BelajarPage({ courses }) {
+export default function BelajarPage() {
   const { id } = useParams();
+  const { courses, loading, error, reload } = useCourses();
   const course = courses.find((c) => String(c.id) === id);
 
   const [activeId, setActiveId] = useState("p1");
@@ -28,6 +31,14 @@ export default function BelajarPage({ courses }) {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [draft, setDraft] = useState({ rating: 0, text: "" });
+
+  if (loading || error) {
+    return (
+      <main className="mx-auto max-w-[600px] px-6 py-24">
+        <DataStatus loading={loading} error={error} onRetry={reload} />
+      </main>
+    );
+  }
 
   if (!course) {
     return (

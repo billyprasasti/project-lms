@@ -24,10 +24,11 @@ export const INITIAL_ORDERS = [
   mkOrder(6, 8, "Berhasil", T(5, 11, 48)),
 ];
 
-export const INITIAL_ENROLLMENTS = [
-  { courseId: 1, done: 12, total: 12 },
-  { courseId: 3, done: 4, total: 12 },
-  { courseId: 10, done: 3, total: 12 },
+// id kelas dibuat oleh server, jadi data awal "Kelas Saya" dicocokkan lewat judul kelas
+export const ENROLLMENT_SEEDS = [
+  { title: "Belajar Analisis Laporan Keuangan dari Nol", done: 12, total: 12 },
+  { title: "Merancang Antarmuka yang Mudah Digunakan", done: 4, total: 12 },
+  { title: "Membangun Website Interaktif dengan React", done: 3, total: 12 },
 ];
 
 export const INITIAL_PROFILE = {

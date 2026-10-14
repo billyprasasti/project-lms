@@ -4,42 +4,49 @@ import Modal from "./Modal";
 import useToast from "./useToast";
 import { btnPrimary, btnOutline } from "./ui";
 
-// Mengelola dialog Create / Update / Delete untuk array `courses` (state ada di App.js)
+// Dialog Create / Update / Delete. Aksi memanggil API (lewat context), jadi async.
 export default function useCourseCrud({ onAdd, onUpdate, onDelete }) {
   const [form, setForm] = useState({ open: false, course: null });
   const [toDelete, setToDelete] = useState(null);
+  const [busy, setBusy] = useState(false);
   const { notify, toastNode } = useToast();
 
   const close = () => setForm({ open: false, course: null });
 
-  const save = (data) => {
-    if (form.course) {
-      onUpdate(form.course.id, data);
-      notify("Kelas berhasil diperbarui.");
-    } else {
-      onAdd(data);
-      notify("Kelas baru berhasil ditambahkan.");
+  const run = async (action, okMessage, after) => {
+    setBusy(true);
+    try {
+      await action();
+      notify(okMessage);
+      after();
+    } catch (e) {
+      notify(`Gagal: ${e.message}`);
+    } finally {
+      setBusy(false);
     }
-    close();
   };
 
-  const confirmDelete = () => {
-    onDelete(toDelete.id);
-    setToDelete(null);
-    notify("Kelas berhasil dihapus.");
-  };
+  const save = (data) =>
+    form.course
+      ? run(() => onUpdate(form.course.id, data), "Kelas berhasil diperbarui.", close)
+      : run(() => onAdd(data), "Kelas baru berhasil ditambahkan.", close);
+
+  const confirmDelete = () =>
+    run(() => onDelete(toDelete.id), "Kelas berhasil dihapus.", () => setToDelete(null));
 
   const dialogs = (
     <>
-      {form.open && <CourseFormModal course={form.course} onSubmit={save} onClose={close} />}
+      {form.open && <CourseFormModal course={form.course} onSubmit={save} onClose={close} busy={busy} />}
       {toDelete && (
         <Modal title="Hapus kelas?" onClose={() => setToDelete(null)}>
           <p className="mb-5 text-sm text-inkSoft">
             Kelas <strong className="text-ink">{toDelete.title}</strong> akan dihapus dari daftar.
           </p>
           <div className="flex gap-3">
-            <button onClick={() => setToDelete(null)} className={btnOutline}>Batal</button>
-            <button onClick={confirmDelete} className={`${btnPrimary} !bg-red`}>Hapus</button>
+            <button onClick={() => setToDelete(null)} disabled={busy} className={btnOutline}>Batal</button>
+            <button onClick={confirmDelete} disabled={busy} className={`${btnPrimary} !bg-red disabled:opacity-60`}>
+              {busy ? "Menghapus..." : "Hapus"}
+            </button>
           </div>
         </Modal>
       )}

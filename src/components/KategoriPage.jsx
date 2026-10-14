@@ -1,3 +1,5 @@
+import DataStatus from "./DataStatus";
+import { useCourses } from "../context/CoursesContext";
 import { useState } from "react";
 import PageLayout from "./PageLayout";
 import FilterSidebar from "./FilterSidebar";
@@ -12,13 +14,14 @@ const NO_FILTER = { cat: [], price: [], duration: [] };
 const matchRange = (ranges, keys, value) =>
   keys.length === 0 || ranges.some((r) => keys.includes(r.key) && r.test(value));
 
-export default function KategoriPage({ courses, profile, onAdd, onUpdate, onDelete }) {
+export default function KategoriPage({ profile }) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState(null);
   const [sortOpen, setSortOpen] = useState(false);
   const [filters, setFilters] = useState(NO_FILTER);
   const [page, setPage] = useState(1);
-  const crud = useCourseCrud({ onAdd, onUpdate, onDelete });
+  const { courses, loading, error, reload, addCourse, updateCourse, deleteCourse } = useCourses();
+  const crud = useCourseCrud({ onAdd: addCourse, onUpdate: updateCourse, onDelete: deleteCourse });
 
   const toggleFilter = (group, key) => {
     setFilters((f) => ({
@@ -85,6 +88,7 @@ export default function KategoriPage({ courses, profile, onAdd, onUpdate, onDele
 
             <p className="mb-4 text-[13px] text-inkSoft">Menampilkan {sorted.length} dari {courses.length} kelas</p>
 
+            <DataStatus loading={loading} error={error} onRetry={reload}>
             {visible.length === 0 ? (
               <div className="rounded-[14px] border border-dashed border-line bg-white p-10 text-center text-sm text-inkSoft">
                 Tidak ada kelas yang cocok. Ubah filter atau tambah kelas baru.
@@ -98,6 +102,7 @@ export default function KategoriPage({ courses, profile, onAdd, onUpdate, onDele
             )}
 
             <Pagination page={currentPage} totalPages={totalPages} onChange={setPage} />
+            </DataStatus>
           </section>
         </div>
       </main>

@@ -1,3 +1,5 @@
+import DataStatus from "./DataStatus";
+import { useCourses } from "../context/CoursesContext";
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Logo from "./Logo";
@@ -69,8 +71,9 @@ function Illustration({ ok }) {
   );
 }
 
-export default function CheckoutPage({ courses, onOrder }) {
+export default function CheckoutPage({ onOrder }) {
   const { id } = useParams();
+  const { courses, loading, error: loadError, reload } = useCourses();
   const course = courses.find((c) => String(c.id) === id);
 
   const [step, setStep] = useState(0); // 0 pilih, 1 bayar, 2 selesai
@@ -85,7 +88,7 @@ export default function CheckoutPage({ courses, onOrder }) {
   const method = ALL_METHODS.find((m) => m.id === methodId);
 
   const finish = (status) => {
-    onOrder({ status, courseId: course.id, title: course.title, cat: course.cat, price: course.price });
+    onOrder({ status, courseId: course.id, title: course.title, cat: course.cat, image: course.image, price: course.price });
     setResult(status);
     setStep(2);
   };
@@ -103,6 +106,14 @@ export default function CheckoutPage({ courses, onOrder }) {
   useEffect(() => {
     if (step === 1 && left === 0) finishRef.current("Belum Bayar");
   }, [step, left]);
+
+  if (loading || loadError) {
+    return (
+      <main className="mx-auto max-w-[600px] px-6 py-24">
+        <DataStatus loading={loading} error={loadError} onRetry={reload} />
+      </main>
+    );
+  }
 
   if (!course) {
     return (

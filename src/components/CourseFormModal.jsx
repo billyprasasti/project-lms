@@ -1,26 +1,50 @@
 import { useState } from "react";
 import Modal from "./Modal";
+import CourseImage from "./CourseImage";
+import { fileToDataUrl } from "../utils/image";
 import { Field } from "./Field";
 import { CATEGORIES, catLabel } from "../data/courses";
 import { inputCls, btnPrimary, btnOutline } from "./ui";
 
 const EMPTY = {
-  title: "", category: "", cat: "bisnis", desc: "",
+  title: "", category: "", cat: "bisnis", desc: "", image: "",
   mentor: "", role: "", company: "",
   price: "", duration: "", rating: "",
 };
 
-export default function CourseFormModal({ course, onSubmit, onClose }) {
+export default function CourseFormModal({ course, onSubmit, onClose, busy = false }) {
   const isEdit = Boolean(course);
   const [v, setV] = useState(course ?? EMPTY);
   const [err, setErr] = useState({});
+  const [imgBusy, setImgBusy] = useState(false);
+  const image = v.image || "";
 
   const set = (e) => setV({ ...v, [e.target.name]: e.target.value });
+
+  const pickFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // supaya file yang sama bisa dipilih lagi
+    if (!file) return;
+    const fail = (msg) => setErr((x) => ({ ...x, image: msg }));
+    if (!file.type.startsWith("image/")) return fail("File harus berupa gambar.");
+    if (file.size > 8 * 1024 * 1024) return fail("Ukuran file maksimal 8 MB.");
+    setImgBusy(true);
+    try {
+      const url = await fileToDataUrl(file);
+      setV((cur) => ({ ...cur, image: url }));
+      setErr((x) => ({ ...x, image: undefined }));
+    } catch (ex) {
+      fail(ex.message);
+    } finally {
+      setImgBusy(false);
+    }
+  };
 
   const submit = (e) => {
     e.preventDefault();
     const er = {};
     if (!v.title.trim()) er.title = "Judul wajib diisi.";
+    if (image && !/^(https?:\/\/|data:image\/)/i.test(image)) er.image = "URL gambar harus diawali http:// atau https://";
     if (!v.mentor.trim()) er.mentor = "Nama mentor wajib diisi.";
     if (!(Number(v.price) > 0)) er.price = "Harga harus lebih dari 0.";
     if (!(Number(v.duration) > 0)) er.duration = "Durasi harus lebih dari 0.";
@@ -58,6 +82,26 @@ export default function CourseFormModal({ course, onSubmit, onClose }) {
         </div>
 
         <div className="mb-[18px]">
+          <span className="mb-1.5 block text-[13.5px] font-semibold">Gambar Kelas</span>
+          <CourseImage src={image} cat={v.cat} className="mb-3 aspect-[16/9] w-full rounded-lg" />
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <label className="flex h-9 cursor-pointer items-center rounded-md border border-green bg-white px-4 text-[13px] font-semibold text-green hover:bg-greenPale">
+              {imgBusy ? "Memproses..." : "Upload gambar"}
+              <input type="file" accept="image/*" onChange={pickFile} disabled={imgBusy} className="sr-only" aria-label="Upload gambar kelas" />
+            </label>
+            {image && (
+              <button type="button" onClick={() => setV({ ...v, image: "" })}
+                className="border-0 bg-transparent p-0 text-xs font-semibold text-red">Hapus gambar</button>
+            )}
+            {image.startsWith("data:") && <span className="text-xs text-inkSoft">Gambar dari file terpilih</span>}
+          </div>
+          <input id="image" name="image" type="text" aria-label="URL gambar" placeholder="Atau tempel URL gambar (https://...)"
+            value={image.startsWith("data:") ? "" : image} onChange={set}
+            className={`${inputCls} ${err.image ? "border-red" : "border-line focus:border-green"}`} />
+          {err.image && <p className="mt-1 text-xs text-red">{err.image}</p>}
+        </div>
+
+        <div className="mb-[18px]">
           <label htmlFor="desc" className="mb-1.5 block text-[13.5px] font-semibold">Deskripsi</label>
           <textarea id="desc" name="desc" rows={3} value={v.desc} onChange={set}
             className="w-full rounded-lg border border-line p-3.5 text-[14.5px] focus:border-green focus:outline-none" />
@@ -74,7 +118,9 @@ export default function CourseFormModal({ course, onSubmit, onClose }) {
 
         <div className="mt-2 flex gap-3">
           <button type="button" onClick={onClose} className={btnOutline}>Batal</button>
-          <button type="submit" className={btnPrimary}>{isEdit ? "Simpan Perubahan" : "Tambah Kelas"}</button>
+          <button type="submit" disabled={busy} className={`${btnPrimary} disabled:opacity-60`}>
+            {busy ? "Menyimpan..." : isEdit ? "Simpan Perubahan" : "Tambah Kelas"}
+          </button>
         </div>
       </form>
     </Modal>

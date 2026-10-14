@@ -1,18 +1,32 @@
+import CourseImage from "./CourseImage";
+import DataStatus from "./DataStatus";
+import { useCourses } from "../context/CoursesContext";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import PageLayout from "./PageLayout";
 import PurchaseCard from "./PurchaseCard";
 import CourseCard from "./CourseCard";
 import Stars from "./Stars";
-import { THUMBS, DETAIL, catLabel } from "../data/courses";
+import { DETAIL, catLabel } from "../data/courses";
 
 const card = "rounded-[14px] border border-line bg-white p-5 shadow-card";
 const buyBtn = "flex h-10 w-full items-center justify-center rounded-md bg-green text-[13px] font-semibold text-white hover:bg-greenDark";
 
-export default function KelasDetailPage({ courses, enrollments, profile }) {
+export default function KelasDetailPage({ enrollments, profile }) {
   const { id } = useParams();
+  const { courses, loading, error, reload } = useCourses();
   const course = courses.find((c) => String(c.id) === id);
   const [openIdx, setOpenIdx] = useState(0);
+
+  if (loading || error) {
+    return (
+      <PageLayout profile={profile}>
+        <main className="mx-auto max-w-[1180px] px-6 py-24">
+          <DataStatus loading={loading} error={error} onRetry={reload} />
+        </main>
+      </PageLayout>
+    );
+  }
 
   if (!course) {
     return (
@@ -50,8 +64,8 @@ export default function KelasDetailPage({ courses, enrollments, profile }) {
           <span className="text-ink">{course.title}</span>
         </nav>
 
-        <section className={`relative overflow-hidden rounded-[22px] bg-gradient-to-br ${THUMBS[course.cat]}`}>
-          <div className="bg-ink/70 px-6 py-14 text-white sm:px-14">
+        <CourseImage src={course.image} cat={course.cat} className="rounded-[22px]">
+          <div className="relative bg-ink/70 px-6 py-14 text-white sm:px-14">
             <h1 className="mb-3 max-w-[560px] font-head text-2xl font-semibold leading-tight sm:text-[32px]">{course.title}</h1>
             <p className="mb-3 max-w-[420px] text-sm text-[#D7D2C4]">
               Belajar bersama tutor profesional di Video Course. Kapanpun, di manapun.
@@ -61,7 +75,7 @@ export default function KelasDetailPage({ courses, enrollments, profile }) {
               <span>{course.rating} ({course.reviews})</span>
             </div>
           </div>
-        </section>
+        </CourseImage>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
           <div className="order-last flex min-w-0 flex-col gap-6 lg:order-none lg:col-start-1 lg:row-start-1">

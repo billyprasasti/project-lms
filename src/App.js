@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import LoginPage from "./components/LoginPage";
 import RegisterPage from "./components/RegisterPage";
@@ -10,23 +10,29 @@ import BelajarPage from "./components/BelajarPage";
 import PesananPage from "./components/PesananPage";
 import KelasSayaPage from "./components/KelasSayaPage";
 import ProfilPage from "./components/ProfilPage";
-import { INITIAL_COURSES, ADMIN_FEE } from "./data/courses";
-import { INITIAL_ORDERS, INITIAL_ENROLLMENTS, INITIAL_PROFILE, ROMAN } from "./data/account";
+import { CoursesProvider, useCourses } from "./context/CoursesContext";
+import { ADMIN_FEE } from "./data/courses";
+import { INITIAL_ORDERS, ENROLLMENT_SEEDS, INITIAL_PROFILE, ROMAN } from "./data/account";
 
-function App() {
-  // Semua state utama (array of object) ada di parent, lalu di-passing lewat props.
-  const [courses, setCourses] = useState(INITIAL_COURSES);
+function AppRoutes() {
+  // Data kelas ada di CoursesContext (diambil dari API). State lain masih lokal.
+  const { courses, loading } = useCourses();
   const [orders, setOrders] = useState(INITIAL_ORDERS);
-  const [enrollments, setEnrollments] = useState(INITIAL_ENROLLMENTS);
+  const [enrollments, setEnrollments] = useState([]);
   const [profile, setProfile] = useState(INITIAL_PROFILE);
+  const seeded = useRef(false);
 
-  // CRUD kelas
-  const addCourse = (data) =>
-    setCourses((prev) => [{ ...data, id: Date.now(), reviews: "0" }, ...prev]);
-  const updateCourse = (id, data) =>
-    setCourses((prev) => prev.map((c) => (c.id === id ? { ...c, ...data } : c)));
-  const deleteCourse = (id) =>
-    setCourses((prev) => prev.filter((c) => c.id !== id));
+  // Isi "Kelas Saya" awal sekali, setelah data kelas dari API selesai dimuat
+  useEffect(() => {
+    if (loading || seeded.current || courses.length === 0) return;
+    seeded.current = true;
+    setEnrollments(
+      ENROLLMENT_SEEDS.map((s) => {
+        const c = courses.find((x) => x.title === s.title);
+        return c ? { courseId: c.id, done: s.done, total: s.total } : null;
+      }).filter(Boolean)
+    );
+  }, [loading, courses]);
 
   // Pesanan baru dari checkout; kalau berhasil, kelas masuk ke "Kelas Saya"
   const addOrder = (o) => {
@@ -39,23 +45,27 @@ function App() {
       );
   };
 
-  const crud = { courses, profile, onAdd: addCourse, onUpdate: updateCourse, onDelete: deleteCourse };
-
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/beranda" element={<BerandaPage {...crud} />} />
-      <Route path="/kategori" element={<KategoriPage {...crud} />} />
-      <Route path="/kelas/:id" element={<KelasDetailPage courses={courses} enrollments={enrollments} profile={profile} />} />
-      <Route path="/checkout/:id" element={<CheckoutPage courses={courses} onOrder={addOrder} />} />
-      <Route path="/belajar/:id" element={<BelajarPage courses={courses} />} />
+      <Route path="/beranda" element={<BerandaPage profile={profile} />} />
+      <Route path="/kategori" element={<KategoriPage profile={profile} />} />
+      <Route path="/kelas/:id" element={<KelasDetailPage enrollments={enrollments} profile={profile} />} />
+      <Route path="/checkout/:id" element={<CheckoutPage onOrder={addOrder} />} />
+      <Route path="/belajar/:id" element={<BelajarPage />} />
       <Route path="/pesanan" element={<PesananPage orders={orders} profile={profile} />} />
-      <Route path="/kelas-saya" element={<KelasSayaPage courses={courses} enrollments={enrollments} profile={profile} />} />
+      <Route path="/kelas-saya" element={<KelasSayaPage enrollments={enrollments} profile={profile} />} />
       <Route path="/profil" element={<ProfilPage profile={profile} onSave={setProfile} />} />
       <Route path="*" element={<LoginPage />} />
     </Routes>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <CoursesProvider>
+      <AppRoutes />
+    </CoursesProvider>
+  );
+}

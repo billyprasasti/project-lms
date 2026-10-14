@@ -1,3 +1,5 @@
+import DataStatus from "./DataStatus";
+import { useCourses } from "../context/CoursesContext";
 import { useState } from "react";
 import PageLayout from "./PageLayout";
 import CourseCard from "./CourseCard";
@@ -8,10 +10,11 @@ import { CATEGORIES } from "../data/courses";
 
 const TABS = [{ key: "semua", label: "Semua Kelas" }, ...CATEGORIES];
 
-export default function BerandaPage({ courses, profile, onAdd, onUpdate, onDelete }) {
+export default function BerandaPage({ profile }) {
   const [cat, setCat] = useState("semua");
   const [email, setEmail] = useState("");
-  const crud = useCourseCrud({ onAdd, onUpdate, onDelete });
+  const { courses, loading, error, reload, addCourse, updateCourse, deleteCourse } = useCourses();
+  const crud = useCourseCrud({ onAdd: addCourse, onUpdate: updateCourse, onDelete: deleteCourse });
   const { notify, toastNode } = useToast();
 
   // READ: daftar kelas ditampilkan dari array `courses`, difilter per kategori
@@ -57,6 +60,7 @@ export default function BerandaPage({ courses, profile, onAdd, onUpdate, onDelet
 
           <Tabs tabs={TABS} value={cat} onChange={setCat} className="mb-7" />
 
+          <DataStatus loading={loading} error={error} onRetry={reload}>
           {list.length === 0 ? (
             <div className="rounded-[14px] border border-dashed border-line bg-white p-10 text-center text-sm text-inkSoft">
               Belum ada kelas di kategori ini. Klik “+ Tambah Kelas” untuk membuat yang baru.
@@ -69,6 +73,7 @@ export default function BerandaPage({ courses, profile, onAdd, onUpdate, onDelet
               ))}
             </div>
           )}
+          </DataStatus>
         </section>
 
         <section className="mx-auto mt-20 max-w-[1180px] px-6">

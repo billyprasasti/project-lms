@@ -1,6 +1,7 @@
+import CourseImage from "./CourseImage";
 import { Link } from "react-router-dom";
 import Stars from "./Stars";
-import { THUMBS, catLabel, formatPrice } from "../data/courses";
+import { catLabel, formatPrice } from "../data/courses";
 
 const iconBtn =
   "flex h-8 w-8 items-center justify-center rounded-full border-0 bg-white/90 p-0 text-ink shadow-card hover:bg-white";
@@ -9,7 +10,7 @@ export default function CourseCard({ course, onEdit, onDelete }) {
   const manage = Boolean(onEdit && onDelete);
   return (
     <article className="flex flex-col overflow-hidden rounded-[14px] border border-line bg-white shadow-card">
-      <div className={`relative aspect-[16/10] bg-gradient-to-br ${THUMBS[course.cat]}`}>
+      <CourseImage src={course.image} cat={course.cat} className="aspect-[16/10]">
         <Link to={`/kelas/${course.id}`} tabIndex={-1} aria-hidden="true" className="absolute inset-0" />
         <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-ink/70 px-2.5 py-1 text-[11.5px] text-white">
           {catLabel(course.cat)}
@@ -28,7 +29,7 @@ export default function CourseCard({ course, onEdit, onDelete }) {
             </button>
           </div>
         )}
-      </div>
+      </CourseImage>
 
       <div className="flex flex-1 flex-col p-4">
         <div className="mb-1.5 text-xs font-semibold text-greenDark">{course.category}</div>

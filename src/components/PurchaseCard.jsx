@@ -1,11 +1,12 @@
-import { THUMBS, formatPrice } from "../data/courses";
+import CourseImage from "./CourseImage";
+import { formatPrice } from "../data/courses";
 
 const INCLUDES = ["Ujian Akhir", "49 Video", "7 Dokumen", "Sertifikat", "Pretest"];
 
 export default function PurchaseCard({ course, offer = false, action = null }) {
   return (
     <aside className="rounded-[14px] border border-line bg-white p-3.5 shadow-card lg:sticky lg:top-24">
-      <div className={`mb-3 aspect-[16/10] rounded-lg bg-gradient-to-br ${THUMBS[course.cat]}`} />
+      <CourseImage src={course.image} cat={course.cat} className="mb-3 aspect-[16/10] rounded-lg" />
       <h2 className="mb-2 font-head text-sm font-semibold leading-snug">{course.title}</h2>
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <span className="font-head text-base font-semibold text-green">{formatPrice(course.price)}</span>
