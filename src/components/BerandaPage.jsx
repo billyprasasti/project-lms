@@ -1,8 +1,7 @@
-import DataStatus from "./DataStatus";
-import { useCourses } from "../context/CoursesContext";
+import useDataStore from "../store/zustand/useDataStore";
 import { useState } from "react";
 import PageLayout from "./PageLayout";
-import CourseCard from "./CourseCard";
+import ListView from "./ListView";
 import Tabs from "./Tabs";
 import useCourseCrud from "./useCourseCrud";
 import useToast from "./useToast";
@@ -13,11 +12,14 @@ const TABS = [{ key: "semua", label: "Semua Kelas" }, ...CATEGORIES];
 export default function BerandaPage({ profile }) {
   const [cat, setCat] = useState("semua");
   const [email, setEmail] = useState("");
-  const { courses, loading, error, reload, addCourse, updateCourse, deleteCourse } = useCourses();
-  const crud = useCourseCrud({ onAdd: addCourse, onUpdate: updateCourse, onDelete: deleteCourse });
+  const courses = useDataStore((s) => s.courses);
+  const addData = useDataStore((s) => s.addData);
+  const updateData = useDataStore((s) => s.updateData);
+  const deleteData = useDataStore((s) => s.deleteData);
+  const crud = useCourseCrud({ onAdd: addData, onUpdate: updateData, onDelete: deleteData });
   const { notify, toastNode } = useToast();
 
-  // READ: daftar kelas ditampilkan dari array `courses`, difilter per kategori
+  // READ: data dari Zustand store, difilter per kategori lalu ditampilkan oleh ListView
   const list = cat === "semua" ? courses : courses.filter((c) => c.cat === cat);
 
   const subscribe = (e) => {
@@ -60,20 +62,9 @@ export default function BerandaPage({ profile }) {
 
           <Tabs tabs={TABS} value={cat} onChange={setCat} className="mb-7" />
 
-          <DataStatus loading={loading} error={error} onRetry={reload}>
-          {list.length === 0 ? (
-            <div className="rounded-[14px] border border-dashed border-line bg-white p-10 text-center text-sm text-inkSoft">
-              Belum ada kelas di kategori ini. Klik “+ Tambah Kelas” untuk membuat yang baru.
-            </div>
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {list.map((c) => (
-                // UPDATE (ikon pensil) & DELETE (ikon sampah) ada di setiap kartu
-                <CourseCard key={c.id} course={c} onEdit={crud.openEdit} onDelete={crud.askDelete} />
-              ))}
-            </div>
-          )}
-          </DataStatus>
+          {/* UPDATE (ikon pensil) & DELETE (ikon sampah) ada di setiap kartu */}
+          <ListView courses={list} onEdit={crud.openEdit} onDelete={crud.askDelete}
+            emptyText="Belum ada kelas di kategori ini. Klik “+ Tambah Kelas” untuk membuat yang baru." />
         </section>
 
         <section className="mx-auto mt-20 max-w-[1180px] px-6">

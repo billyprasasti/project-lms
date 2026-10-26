@@ -1,5 +1,5 @@
 import DataStatus from "./DataStatus";
-import { useCourses } from "../context/CoursesContext";
+import useDataStore from "../store/zustand/useDataStore";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Stars from "./Stars";
@@ -20,7 +20,11 @@ function ItemIcon({ type, done }) {
 
 export default function BelajarPage() {
   const { id } = useParams();
-  const { courses, loading, error, reload } = useCourses();
+  const courses = useDataStore((s) => s.courses);
+  const loading = useDataStore((s) => s.loading);
+  const error = useDataStore((s) => s.error);
+  const fetchData = useDataStore((s) => s.fetchData);
+  const reload = () => fetchData();
   const course = courses.find((c) => String(c.id) === id);
 
   const [activeId, setActiveId] = useState("p1");

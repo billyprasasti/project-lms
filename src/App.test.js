@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "./App";
 import * as api from "./services/api/courseService";
+import useDataStore from "./store/zustand/useDataStore";
 
 // Service API di-mock supaya test tidak memanggil jaringan.
 // (fungsi biasa, bukan jest.fn, karena CRA me-reset mock di tiap test)
@@ -15,6 +16,9 @@ jest.mock("./services/api/courseService", () => {
     deleteCourse: async (id) => { db = db.filter((x) => x.id !== id); return id; },
   };
 });
+
+// Store Zustand bersifat global, jadi dikembalikan ke kondisi awal sebelum tiap test.
+beforeEach(() => useDataStore.setState(useDataStore.getInitialState(), true));
 
 const renderAt = (path) =>
   render(

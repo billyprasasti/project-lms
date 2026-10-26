@@ -1,5 +1,5 @@
 import DataStatus from "./DataStatus";
-import { useCourses } from "../context/CoursesContext";
+import useDataStore from "../store/zustand/useDataStore";
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Logo from "./Logo";
@@ -73,7 +73,11 @@ function Illustration({ ok }) {
 
 export default function CheckoutPage({ onOrder }) {
   const { id } = useParams();
-  const { courses, loading, error: loadError, reload } = useCourses();
+  const courses = useDataStore((s) => s.courses);
+  const loading = useDataStore((s) => s.loading);
+  const loadError = useDataStore((s) => s.error);
+  const fetchData = useDataStore((s) => s.fetchData);
+  const reload = () => fetchData();
   const course = courses.find((c) => String(c.id) === id);
 
   const [step, setStep] = useState(0); // 0 pilih, 1 bayar, 2 selesai

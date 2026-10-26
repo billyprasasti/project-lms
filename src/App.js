@@ -10,17 +10,26 @@ import BelajarPage from "./components/BelajarPage";
 import PesananPage from "./components/PesananPage";
 import KelasSayaPage from "./components/KelasSayaPage";
 import ProfilPage from "./components/ProfilPage";
-import { CoursesProvider, useCourses } from "./context/CoursesContext";
+import useDataStore from "./store/zustand/useDataStore";
 import { ADMIN_FEE } from "./data/courses";
 import { INITIAL_ORDERS, ENROLLMENT_SEEDS, INITIAL_PROFILE, ROMAN } from "./data/account";
 
 function AppRoutes() {
-  // Data kelas ada di CoursesContext (diambil dari API). State lain masih lokal.
-  const { courses, loading } = useCourses();
+  // Data kelas ada di Zustand store (diambil dari API). State lain masih lokal.
+  const courses = useDataStore((s) => s.courses);
+  const loading = useDataStore((s) => s.loading);
+  const fetchData = useDataStore((s) => s.fetchData);
   const [orders, setOrders] = useState(INITIAL_ORDERS);
   const [enrollments, setEnrollments] = useState([]);
   const [profile, setProfile] = useState(INITIAL_PROFILE);
   const seeded = useRef(false);
+
+  // GET: ambil data kelas dari API sekali saat aplikasi dibuka, simpan ke store
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
+  }, [fetchData]);
 
   // Isi "Kelas Saya" awal sekali, setelah data kelas dari API selesai dimuat
   useEffect(() => {
@@ -63,9 +72,5 @@ function AppRoutes() {
 }
 
 export default function App() {
-  return (
-    <CoursesProvider>
-      <AppRoutes />
-    </CoursesProvider>
-  );
+  return <AppRoutes />;
 }

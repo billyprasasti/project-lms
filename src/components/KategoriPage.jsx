@@ -1,9 +1,8 @@
-import DataStatus from "./DataStatus";
-import { useCourses } from "../context/CoursesContext";
+import useDataStore from "../store/zustand/useDataStore";
 import { useState } from "react";
 import PageLayout from "./PageLayout";
 import FilterSidebar from "./FilterSidebar";
-import CourseCard from "./CourseCard";
+import ListView from "./ListView";
 import Pagination from "./Pagination";
 import useCourseCrud from "./useCourseCrud";
 import { PRICE_RANGES, DURATION_RANGES, SORTS } from "../data/courses";
@@ -20,8 +19,11 @@ export default function KategoriPage({ profile }) {
   const [sortOpen, setSortOpen] = useState(false);
   const [filters, setFilters] = useState(NO_FILTER);
   const [page, setPage] = useState(1);
-  const { courses, loading, error, reload, addCourse, updateCourse, deleteCourse } = useCourses();
-  const crud = useCourseCrud({ onAdd: addCourse, onUpdate: updateCourse, onDelete: deleteCourse });
+  const courses = useDataStore((s) => s.courses);
+  const addData = useDataStore((s) => s.addData);
+  const updateData = useDataStore((s) => s.updateData);
+  const deleteData = useDataStore((s) => s.deleteData);
+  const crud = useCourseCrud({ onAdd: addData, onUpdate: updateData, onDelete: deleteData });
 
   const toggleFilter = (group, key) => {
     setFilters((f) => ({
@@ -88,21 +90,11 @@ export default function KategoriPage({ profile }) {
 
             <p className="mb-4 text-[13px] text-inkSoft">Menampilkan {sorted.length} dari {courses.length} kelas</p>
 
-            <DataStatus loading={loading} error={error} onRetry={reload}>
-            {visible.length === 0 ? (
-              <div className="rounded-[14px] border border-dashed border-line bg-white p-10 text-center text-sm text-inkSoft">
-                Tidak ada kelas yang cocok. Ubah filter atau tambah kelas baru.
-              </div>
-            ) : (
-              <div className="grid gap-6 sm:grid-cols-2">
-                {visible.map((c) => (
-                  <CourseCard key={c.id} course={c} onEdit={crud.openEdit} onDelete={crud.askDelete} />
-                ))}
-              </div>
-            )}
-
-            <Pagination page={currentPage} totalPages={totalPages} onChange={setPage} />
-            </DataStatus>
+            <ListView courses={visible} onEdit={crud.openEdit} onDelete={crud.askDelete}
+              gridClass="grid gap-6 sm:grid-cols-2"
+              emptyText="Tidak ada kelas yang cocok. Ubah filter atau tambah kelas baru.">
+              <Pagination page={currentPage} totalPages={totalPages} onChange={setPage} />
+            </ListView>
           </section>
         </div>
       </main>

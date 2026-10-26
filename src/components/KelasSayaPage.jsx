@@ -1,6 +1,6 @@
 import CourseImage from "./CourseImage";
 import DataStatus from "./DataStatus";
-import { useCourses } from "../context/CoursesContext";
+import useDataStore from "../store/zustand/useDataStore";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import AccountLayout from "./AccountLayout";
@@ -15,7 +15,11 @@ const TABS = [
 ];
 
 export default function KelasSayaPage({ enrollments, profile }) {
-  const { courses, loading, error, reload } = useCourses();
+  const courses = useDataStore((s) => s.courses);
+  const loading = useDataStore((s) => s.loading);
+  const error = useDataStore((s) => s.error);
+  const fetchData = useDataStore((s) => s.fetchData);
+  const reload = () => fetchData();
   const [tab, setTab] = useState("semua");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
